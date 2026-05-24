@@ -244,7 +244,7 @@
     <string name="system_font">Системный шрифт</string>
     <string name="vulkan_version">Версия Вулкана</string>
     <string name="exposed_extensions">Открытые расширения</string>
-    <string name="multiselection_combobox_display_text">%d из %d товаров</string>
+    <string name="multiselection_combobox_display_text">%1$d из %2$d товаров</string>
     <string name="voltage">Напряжение</string>
     <string name="current">ток</string>
     <string name="capacity">Емкость</string>

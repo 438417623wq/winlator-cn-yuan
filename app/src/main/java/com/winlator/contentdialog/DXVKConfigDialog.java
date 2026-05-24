@@ -80,9 +80,47 @@ public class DXVKConfigDialog extends ContentDialog {
 
         FileUtils.delete(dxvkConfigFile);
         String content = getDXVKConfigContent(config);
+        File parentFile = dxvkConfigFile.getParentFile();
+        if (parentFile != null && !parentFile.isDirectory()) parentFile.mkdirs();
         if (FileUtils.writeString(dxvkConfigFile, content)) {
             envVars.put("DXVK_CONFIG_FILE", RootFS.getDosUserConfigPath()+"\\dxvk.conf");
         }
+    }
+
+    public static boolean setRuntimeFrameLimit(Context context, int frameLimit) {
+        frameLimit = Math.max(0, frameLimit);
+        File rootDir = RootFS.find(context).getRootDir();
+        File dxvkConfigFile = new File(rootDir, RootFS.USER_CONFIG_PATH+"/dxvk.conf");
+        File parentFile = dxvkConfigFile.getParentFile();
+        if (parentFile != null && !parentFile.isDirectory()) parentFile.mkdirs();
+        String content = dxvkConfigFile.isFile() ? FileUtils.readString(dxvkConfigFile) : "";
+        if (content == null) content = "";
+
+        content = content
+            .replaceAll("(?m)^dxgi\\.maxFrameRate\\s*=.*\\n?", "")
+            .replaceAll("(?m)^d3d9\\.maxFrameRate\\s*=.*\\n?", "");
+
+        if (frameLimit > 0) {
+            content = "dxgi.maxFrameRate = "+frameLimit+"\n"+
+                      "d3d9.maxFrameRate = "+frameLimit+"\n"+
+                      content;
+        }
+
+        return FileUtils.writeString(dxvkConfigFile, content);
+    }
+
+    public static boolean hasRuntimeFrameLimit(Context context, int frameLimit) {
+        frameLimit = Math.max(0, frameLimit);
+        File rootDir = RootFS.find(context).getRootDir();
+        File dxvkConfigFile = new File(rootDir, RootFS.USER_CONFIG_PATH+"/dxvk.conf");
+        String content = dxvkConfigFile.isFile() ? FileUtils.readString(dxvkConfigFile) : "";
+        if (content == null) content = "";
+        if (frameLimit <= 0) {
+            return !content.matches("(?sm).*^dxgi\\.maxFrameRate\\s*=.*$.*") &&
+                   !content.matches("(?sm).*^d3d9\\.maxFrameRate\\s*=.*$.*");
+        }
+        return content.matches("(?sm).*^dxgi\\.maxFrameRate\\s*=\\s*"+frameLimit+"\\s*$.*") &&
+               content.matches("(?sm).*^d3d9\\.maxFrameRate\\s*=\\s*"+frameLimit+"\\s*$.*");
     }
 
     private static String getDXVKConfigContent(KeyValueSet config) {

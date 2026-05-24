@@ -39,6 +39,7 @@ import com.winlator.contentdialog.AudioDriverConfigDialog;
 import com.winlator.contentdialog.ContentDialog;
 import com.winlator.contentdialog.DXVKConfigDialog;
 import com.winlator.contentdialog.DebugDialog;
+import com.winlator.contentdialog.DisplayEnhancementDialog;
 import com.winlator.contentdialog.ScreenEffectDialog;
 import com.winlator.contentdialog.TurnipConfigDialog;
 import com.winlator.contentdialog.VKD3DConfigDialog;
@@ -136,6 +137,8 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     private MagnifierView magnifierView;
     private DebugDialog debugDialog;
     private int frameRatingWindowId = -1;
+    private boolean displayEnhancementFPSVisible = false;
+    private boolean displayEnhancementFrameRating = false;
     private Win32AppWorkarounds win32AppWorkarounds;
     private String screenEffectProfile;
 
@@ -268,7 +271,12 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         xServer.windowManager.addOnWindowModificationListener(new WindowManager.OnWindowModificationListener() {
             @Override
             public void onUpdateWindowContent(Window window) {
-                if (window.id == frameRatingWindowId) frameRating.update();
+                if (frameRating != null) {
+                    if (displayEnhancementFrameRating && displayEnhancementFPSVisible) {
+                        if (isGameFrameWindow(window)) frameRating.update();
+                    }
+                    else if (window.id == frameRatingWindowId) frameRating.update();
+                }
             }
 
             @Override
@@ -393,6 +401,10 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
                 renderer.toggleFullscreen();
                 drawerLayout.closeDrawers();
                 touchpadView.toggleFullscreen();
+                break;
+            case R.id.menu_item_display_enhancement:
+                (new DisplayEnhancementDialog(this)).show();
+                drawerLayout.closeDrawers();
                 break;
             case R.id.menu_item_move_cursor_to_touchpoint:
                 touchpadView.setMoveCursorToTouchpoint(!touchpadView.isMoveCursorToTouchpoint());
@@ -673,6 +685,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             frameRating.setVisibility(View.GONE);
             rootView.addView(frameRating);
         }
+        DisplayEnhancementDialog.applySaved(this);
 
         if (shortcut != null) {
             String controlsProfile = shortcut.getExtra("controlsProfile");
@@ -898,10 +911,53 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         return inputControlsView;
     }
 
+    public void setDisplayEnhancementFPSVisible(boolean visible) {
+        displayEnhancementFPSVisible = visible;
+        runOnUiThread(() -> {
+            if (visible) {
+                if (frameRating == null) {
+                    frameRating = new FrameRating(this);
+                    frameRating.setMode(FrameRating.Mode.SIMPLE);
+                    frameRating.setShowDisplayFPS(true);
+                    frameRating.setVisibility(View.GONE);
+                    ((FrameLayout)findViewById(R.id.FLXServerDisplay)).addView(frameRating);
+                    displayEnhancementFrameRating = true;
+                }
+                else {
+                    if (displayEnhancementFrameRating) frameRating.setMode(FrameRating.Mode.SIMPLE);
+                    frameRating.setShowDisplayFPS(true);
+                }
+
+                xServerView.getRenderer().setDisplayFrameCallback(frameRating::updateDisplayFrame);
+                frameRating.reset();
+                if (frameRatingWindowId != -1) frameRating.setVisibility(View.VISIBLE);
+            }
+            else if (displayEnhancementFrameRating && frameRating != null) {
+                frameRating.setVisibility(View.GONE);
+                xServerView.getRenderer().setDisplayFrameCallback(null);
+            }
+            else if (frameRating != null) {
+                frameRating.setShowDisplayFPS(false);
+                xServerView.getRenderer().setDisplayFrameCallback(null);
+            }
+        });
+    }
+
+    public void setDisplayEnhancementFpsLimits(int gameFpsLimit, int displayFpsLimit) {
+        runOnUiThread(() -> {
+            if (frameRating != null) frameRating.setFpsLimits(gameFpsLimit, displayFpsLimit);
+        });
+    }
+
     private boolean extractDXWrapperFiles() {
         String cacheId = "";
         if (dxwrapper.equals(DXWrappers.DXVK)) {
+            int gameFpsLimit = preferences.getInt(DisplayEnhancementDialog.PREF_GAME_FPS_LIMIT, 0);
+            if (gameFpsLimit > 0) dxwrapperConfig[0].put("framerate", gameFpsLimit);
             DXVKConfigDialog.setEnvVars(this, dxwrapperConfig[0], envVars);
+            if (gameFpsLimit > 0 && !DXVKConfigDialog.hasRuntimeFrameLimit(this, gameFpsLimit)) {
+                DXVKConfigDialog.setRuntimeFrameLimit(this, gameFpsLimit);
+            }
             cacheId += dxwrapper+"-"+dxwrapperConfig[0].get("version", DefaultVersion.DXVK(graphicsDriver[0]));
         }
         else if (dxwrapper.equals(DXWrappers.WINED3D)) {
@@ -1167,6 +1223,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
     private void changeFrameRatingVisibility(Window window, boolean visible) {
         if (frameRating == null) return;
+        if (displayEnhancementFrameRating && !displayEnhancementFPSVisible) return;
         if (visible) {
             Window child = window.getChildCount() > 0 ? window.getChildren().get(0) : null;
             boolean viewable = window.attributes.isMapped() && window.getWidth() >= ScreenInfo.MIN_WIDTH && window.getHeight() >= ScreenInfo.MIN_HEIGHT;
@@ -1184,6 +1241,17 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             frameRatingWindowId = -1;
             runOnUiThread(() -> frameRating.setVisibility(View.GONE));
         }
+    }
+
+    private boolean isGameFrameWindow(Window window) {
+        if (window == null || !window.isRenderable() || window.isDesktopWindow()) return false;
+        if (window.getWidth() < ScreenInfo.MIN_WIDTH || window.getHeight() < ScreenInfo.MIN_HEIGHT) return false;
+
+        if (window.isSurface()) return true;
+        if (!window.getClassName().isEmpty() && !window.getName().isEmpty()) return true;
+
+        Window child = window.getChildCount() > 0 ? window.getChildren().get(0) : null;
+        return child != null && child.isRenderable() && child.isSurface();
     }
 
     public boolean verifyUserRegistry() {

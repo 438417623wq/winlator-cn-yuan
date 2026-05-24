@@ -16,6 +16,37 @@
         <item>1600x900 (16:9)</item>
         <item>1920x1080 (16:9)</item>
     </string-array>
+    <string-array name="display_enhancement_upscale_entries">
+        <item>@string/off</item>
+        <item>@string/clear</item>
+        <item>@string/enhanced</item>
+    </string-array>
+    <string-array name="display_enhancement_frame_smoothing_entries">
+        <item>@string/off</item>
+        <item>@string/display_enhancement_light</item>
+        <item>@string/display_enhancement_medium</item>
+    </string-array>
+    <string-array name="display_enhancement_frame_interpolation_entries">
+        <item>@string/off</item>
+        <item>@string/standard</item>
+        <item>@string/smart</item>
+    </string-array>
+    <string-array name="display_enhancement_fps_limit_entries">
+        <item>@string/off</item>
+        <item>30 FPS</item>
+        <item>45 FPS</item>
+        <item>60 FPS</item>
+        <item>90 FPS</item>
+        <item>120 FPS</item>
+    </string-array>
+    <string-array name="display_enhancement_style_entries">
+        <item>@string/original_picture</item>
+        <item>@string/vivid</item>
+        <item>@string/soft</item>
+        <item>@string/shadow_boost</item>
+        <item>@string/sharp</item>
+        <item>@string/hdr_like</item>
+    </string-array>
     <string-array name="audio_driver_entries">
         <item>ALSA</item>
         <item>PulseAudio</item>

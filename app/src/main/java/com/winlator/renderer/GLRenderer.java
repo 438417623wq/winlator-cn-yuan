@@ -64,6 +64,9 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
     private float pinchAnchorY = 0;
     protected short surfaceWidth;
     protected short surfaceHeight;
+    private int fpsLimit = 0;
+    private volatile boolean gameFrameAvailable = true;
+    private Runnable displayFrameCallback;
     public final EffectComposer effectComposer = new EffectComposer(this);
 
     public GLRenderer(XServerView xServerView, XServer xServer) {
@@ -117,16 +120,16 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
             effectComposer.render();
         }
         else drawFrame();
+
+        if (displayFrameCallback != null) displayFrameCallback.run();
     }
 
     protected void drawFrame() {
-        if (viewportNeedsUpdate) {
-            if (fullscreen) {
-                GLES20.glViewport(0, 0, surfaceWidth, surfaceHeight);
-            }
-            else GLES20.glViewport(viewTransformation.viewOffsetX, viewTransformation.viewOffsetY, viewTransformation.viewWidth, viewTransformation.viewHeight);
-            viewportNeedsUpdate = false;
-        }
+        drawFrame(true);
+    }
+
+    protected void drawFrame(boolean drawCursor) {
+        applySceneViewport();
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
@@ -154,7 +157,15 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
         }
 
         renderWindows();
-        if (cursorVisible) renderCursor();
+        if (drawCursor && cursorVisible) renderCursor();
+    }
+
+    protected void applySceneViewport() {
+        if (fullscreen) {
+            GLES20.glViewport(0, 0, surfaceWidth, surfaceHeight);
+        }
+        else GLES20.glViewport(viewTransformation.viewOffsetX, viewTransformation.viewOffsetY, viewTransformation.viewWidth, viewTransformation.viewHeight);
+        viewportNeedsUpdate = false;
     }
 
     @Override
@@ -177,7 +188,8 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
 
     @Override
     public void onUpdateWindowContent(Window window) {
-        xServerView.requestRender();
+        gameFrameAvailable = true;
+        xServerView.requestContentRender();
     }
 
     @Override
@@ -278,9 +290,34 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
         quadVertices.disable();
     }
 
+    public void renderCursorOnTop() {
+        applySceneViewport();
+        renderCursor();
+    }
+
     public void toggleFullscreen() {
         toggleFullscreen = true;
         xServerView.requestRender();
+    }
+
+    public void setFpsLimit(int fpsLimit) {
+        this.fpsLimit = Math.max(0, fpsLimit);
+        xServerView.resetFramePacing();
+        xServerView.requestRender();
+    }
+
+    public int getFpsLimit() {
+        return fpsLimit;
+    }
+
+    public boolean consumeGameFrameAvailable() {
+        boolean result = gameFrameAvailable;
+        gameFrameAvailable = false;
+        return result;
+    }
+
+    public void setDisplayFrameCallback(Runnable displayFrameCallback) {
+        this.displayFrameCallback = displayFrameCallback;
     }
 
     private Drawable createRootCursorDrawable() {
