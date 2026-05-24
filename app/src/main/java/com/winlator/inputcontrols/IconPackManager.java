@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -193,6 +194,18 @@ public class IconPackManager {
         if (enabled) activePackIds.add(packId);
         else activePackIds.remove(packId);
         setActivePackIds(activePackIds);
+    }
+
+    public StoredIconPack importPack(File file) throws IOException, ClassNotFoundException, JSONException {
+        byte[] bytes = FileUtils.read(file);
+        if (bytes == null || !isSerializedIpk(bytes)) throw new IOException(describeInvalidHeader(bytes));
+
+        try {
+            return importPack(deserializeIconPack(bytes));
+        }
+        catch (IOException | ClassNotFoundException firstException) {
+            throw firstException;
+        }
     }
 
     public StoredIconPack importPack(Uri uri) throws IOException, ClassNotFoundException, JSONException {
@@ -370,6 +383,17 @@ public class IconPackManager {
         }
     }
 
+    public boolean exportPack(StoredIconPack pack, File file) throws IOException {
+        if (pack == null) return false;
+
+        IconPack iconPack = toSerializablePack(pack);
+        byte[] bytes = serializeIconPack(iconPack);
+        iconPack.packSize = bytes.length;
+        bytes = serializeIconPack(iconPack);
+
+        return FileUtils.write(file, bytes);
+    }
+
     public boolean removePack(String packId) {
         if (packId == null || packId.isEmpty()) return false;
         setPackEnabled(packId, false);
@@ -516,9 +540,30 @@ public class IconPackManager {
     }
 
     private static IconPack deserializeIconPack(byte[] bytes) throws IOException, ClassNotFoundException {
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
+        try (ObjectInputStream objectInputStream = new CompatibleIconPackObjectInputStream(new ByteArrayInputStream(bytes))) {
             return (IconPack)objectInputStream.readObject();
         }
+    }
+
+    private static class CompatibleIconPackObjectInputStream extends ObjectInputStream {
+        CompatibleIconPackObjectInputStream(InputStream inputStream) throws IOException {
+            super(inputStream);
+        }
+
+        @Override
+        protected ObjectStreamClass readClassDescriptor() throws IOException, ClassNotFoundException {
+            ObjectStreamClass descriptor = super.readClassDescriptor();
+            Class<?> compatibleClass = getCompatibleIconPackClass(descriptor.getName());
+            ObjectStreamClass compatibleDescriptor = compatibleClass != null ? ObjectStreamClass.lookup(compatibleClass) : null;
+            return compatibleDescriptor != null ? compatibleDescriptor : descriptor;
+        }
+    }
+
+    private static Class<?> getCompatibleIconPackClass(String className) {
+        if (IconPack.class.getName().equals(className)) return IconPack.class;
+        if (Icon.class.getName().equals(className)) return Icon.class;
+        if (BitmapData.class.getName().equals(className)) return BitmapData.class;
+        return null;
     }
 
     private static boolean isSerializedIpk(byte[] bytes) {

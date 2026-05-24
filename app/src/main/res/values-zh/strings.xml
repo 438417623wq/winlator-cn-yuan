@@ -110,6 +110,10 @@
     <string name="icon_pack_manager">图标包管理器</string>
     <string name="icon_pack_found_count">找到 %1$d 包</string>
     <string name="no_icon_packs_available">当前没有图标包</string>
+    <string name="no_files_found">未找到文件</string>
+    <string name="no_files_selected">未选择文件</string>
+    <string name="selected_file_count">已选择 %1$d 个文件</string>
+    <string name="select_current_directory">按确定选择当前目录</string>
     <string name="create_short">创建</string>
     <string name="install_short">安装</string>
     <string name="create_icon_pack_dialog_title">创建新的图标包</string>
@@ -359,7 +363,7 @@
     <string name="system_font">系统字体</string>
     <string name="vulkan_version">Vulkan 版本</string>
     <string name="exposed_extensions">支持的扩展</string>
-    <string name="multiselection_combobox_display_text">%d of %d items</string>
+    <string name="multiselection_combobox_display_text">%1$d of %2$d items</string>
     <string name="voltage">Voltage</string>
     <string name="current">Current</string>
     <string name="capacity">Capacity</string>
@@ -428,6 +432,7 @@
     <string name="y_coordinate_center_offset">Y&#x5750;&#x6807;&#x4E2D;&#x5FC3;&#x70B9;&#x5FAE;&#x8C03;</string>
     <string name="touchpad_settings">触控板设置</string>
     <string name="two_fingers_drag">双指拖动</string>
+    <string name="two_fingers_scroll">双指滚动</string>
     <string name="two_fingers_right_click">双指右键点击</string>
     <string name="long_press_right_click">长按右键点击</string>
     <string name="pinch_zoom_enabled">双指缩放</string>

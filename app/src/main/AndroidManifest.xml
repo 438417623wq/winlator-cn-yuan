@@ -45,16 +45,22 @@
         <activity android:name="com.winlator.ControlsEditorActivity"
             android:exported="false"
             android:theme="@style/AppThemeFullscreenDark"
-            android:screenOrientation="sensorLandscape" />
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|density|navigation"
+            android:screenOrientation="userLandscape" />
 
         <activity android:name="com.winlator.IconPackManagerActivity"
-            android:theme="@style/AppThemeDark"
             android:exported="false"
+            android:theme="@style/AppThemeDark"
             android:screenOrientation="sensorLandscape" />
 
         <activity android:name="com.winlator.IconPackDetailsActivity"
-            android:theme="@style/AppThemeDark"
             android:exported="false"
+            android:theme="@style/AppThemeDark"
+            android:screenOrientation="sensorLandscape" />
+
+        <activity android:name="com.winlator.ImageFilePickerActivity"
+            android:exported="false"
+            android:theme="@style/BottomSheetActivityDark"
             android:screenOrientation="sensorLandscape" />
 
         <activity android:name="com.winlator.ExternalControllerBindingsActivity"

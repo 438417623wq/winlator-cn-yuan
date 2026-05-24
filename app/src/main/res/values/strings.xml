@@ -115,6 +115,10 @@
     <string name="icon_pack_manager">Icon Pack Manager</string>
     <string name="icon_pack_found_count">Found %1$d packs</string>
     <string name="no_icon_packs_available">No icon packs available</string>
+    <string name="no_files_found">No files found</string>
+    <string name="no_files_selected">No files selected</string>
+    <string name="selected_file_count">%1$d files selected</string>
+    <string name="select_current_directory">Press OK to select this directory</string>
     <string name="create_short">Create</string>
     <string name="install_short">Install</string>
     <string name="create_icon_pack_dialog_title">Create New Icon Pack</string>
@@ -364,7 +368,7 @@
     <string name="system_font">System Font</string>
     <string name="vulkan_version">Vulkan Version</string>
     <string name="exposed_extensions">Exposed Extensions</string>
-    <string name="multiselection_combobox_display_text">%d of %d items</string>
+    <string name="multiselection_combobox_display_text">%1$d of %2$d items</string>
     <string name="voltage">Voltage</string>
     <string name="current">Current</string>
     <string name="capacity">Capacity</string>
@@ -429,6 +433,7 @@
     <string name="touchpad_mode">Touchpad Mode</string>
     <string name="touchpad_settings">Touchpad Settings</string>
     <string name="two_fingers_drag">Two-fingers Drag</string>
+    <string name="two_fingers_scroll">Two-fingers Scroll</string>
     <string name="two_fingers_right_click">Two-fingers Right Click</string>
     <string name="long_press_right_click">Long Press Right Click</string>
     <string name="pinch_zoom_enabled">Pinch Zoom</string>

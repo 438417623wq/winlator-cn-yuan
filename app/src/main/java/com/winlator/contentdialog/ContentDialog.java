@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import com.winlator.R;
 import com.winlator.core.AppUtils;
 import com.winlator.core.Callback;
+import com.winlator.core.UnitUtils;
 
 import java.util.ArrayList;
 
@@ -54,6 +55,25 @@ public class ContentDialog extends Dialog {
         });
 
         setContentView(contentView);
+
+        // Adjust FrameLayout width for portrait mode screens
+        FrameLayout frameLayout = contentView.findViewById(R.id.FrameLayout);
+        if (frameLayout != null && frameLayout.getVisibility() == View.VISIBLE) {
+            int preferredWidthPx = AppUtils.getPreferredDialogWidth(context);
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)frameLayout.getLayoutParams();
+            params.width = preferredWidthPx;
+            frameLayout.setLayoutParams(params);
+        }
+
+        // Adjust EditText width for portrait mode screens
+        EditText editText = contentView.findViewById(R.id.EditText);
+        if (editText != null) {
+            int maxWidthPx = AppUtils.getScreenWidth() - (int)UnitUtils.dpToPx(80);
+            int editTextWidthPx = Math.min((int)UnitUtils.dpToPx(280), maxWidthPx);
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams)editText.getLayoutParams();
+            params.width = editTextWidthPx;
+            editText.setLayoutParams(params);
+        }
     }
 
     public View getContentView() {

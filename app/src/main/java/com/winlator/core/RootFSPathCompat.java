@@ -1,8 +1,8 @@
-package com.ludashi.benchmark.core;
+package com.winlator.core;
 
 import android.content.Context;
 
-import com.ludashi.benchmark.xenvironment.RootFS;
+import com.winlator.xenvironment.RootFS;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
