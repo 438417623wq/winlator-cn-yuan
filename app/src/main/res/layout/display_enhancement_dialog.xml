@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="#26282e"
@@ -189,10 +190,15 @@
                 android:textSize="14sp" />
         </LinearLayout>
 
-        <Spinner
-            android:id="@+id/SDisplayFpsLimit"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content" />
+        <com.winlator.widget.SeekBar
+            android:id="@+id/SBDisplayFpsLimit"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            app:minValue="0"
+            app:maxValue="240"
+            app:step="1"
+            app:suffix=" FPS"
+            app:zeroLabel="@string/zero_no_limit" />
     </LinearLayout>
 
     <LinearLayout
@@ -227,15 +233,20 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="150dp"
+            android:layout_width="220dp"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="vertical">
 
-            <Spinner
-                android:id="@+id/SGameFpsLimit"
+            <com.winlator.widget.SeekBar
+                android:id="@+id/SBGameFpsLimit"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                app:minValue="0"
+                app:maxValue="240"
+                app:step="1"
+                app:suffix=" FPS"
+                app:zeroLabel="@string/zero_no_limit" />
 
             <Button
                 android:id="@+id/BTSyncGameFpsLimit"

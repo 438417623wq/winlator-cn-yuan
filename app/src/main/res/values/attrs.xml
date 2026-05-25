@@ -24,6 +24,7 @@
         <attr name="maxValue" />
         <attr name="step" />
         <attr name="suffix" format="string" />
+        <attr name="zeroLabel" format="string" />
         <attr name="textSize" />
     </declare-styleable>
 </resources>

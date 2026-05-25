@@ -19,6 +19,7 @@ import com.winlator.core.AppUtils;
 import com.winlator.renderer.GLRenderer;
 import com.winlator.renderer.effects.DisplayEnhancementEffect;
 import com.winlator.renderer.effects.FrameSmoothingEffect;
+import com.winlator.widget.SeekBar;
 
 public class DisplayEnhancementDialog extends ContentDialog {
     public static final String PREF_UPSCALE_MODE = "display_enhancement_upscale_mode";
@@ -28,14 +29,12 @@ public class DisplayEnhancementDialog extends ContentDialog {
     public static final String PREF_DISPLAY_FPS_LIMIT = "display_enhancement_display_fps_limit";
     public static final String PREF_GAME_FPS_LIMIT = "display_enhancement_game_fps_limit";
 
-    private static final int[] FPS_LIMIT_VALUES = {0, 30, 45, 60, 90, 120};
-
     private final XServerDisplayActivity activity;
     private final SharedPreferences preferences;
     private final Spinner sPictureStyle;
     private final Spinner sFrameInterpolation;
-    private final Spinner sDisplayFpsLimit;
-    private final Spinner sGameFpsLimit;
+    private final SeekBar sbDisplayFpsLimit;
+    private final SeekBar sbGameFpsLimit;
     private final Switch swShowFPS;
     private final Button btSyncGameFpsLimit;
     private boolean loading = true;
@@ -59,15 +58,15 @@ public class DisplayEnhancementDialog extends ContentDialog {
 
         sPictureStyle = findViewById(R.id.SPictureStyle);
         sFrameInterpolation = findViewById(R.id.SFrameInterpolation);
-        sDisplayFpsLimit = findViewById(R.id.SDisplayFpsLimit);
-        sGameFpsLimit = findViewById(R.id.SGameFpsLimit);
+        sbDisplayFpsLimit = findViewById(R.id.SBDisplayFpsLimit);
+        sbGameFpsLimit = findViewById(R.id.SBGameFpsLimit);
         swShowFPS = findViewById(R.id.SWShowFPS);
         btSyncGameFpsLimit = findViewById(R.id.BTSyncGameFpsLimit);
 
         setupSpinner(sPictureStyle, R.array.display_enhancement_style_entries, preferences.getInt(PREF_STYLE_MODE, 0));
         setupSpinner(sFrameInterpolation, R.array.display_enhancement_frame_interpolation_entries, preferences.getInt(PREF_FRAME_SMOOTHING_MODE, 0));
-        setupSpinner(sDisplayFpsLimit, R.array.display_enhancement_fps_limit_entries, findFpsLimitPosition(preferences.getInt(PREF_DISPLAY_FPS_LIMIT, 0)));
-        setupSpinner(sGameFpsLimit, R.array.display_enhancement_fps_limit_entries, findFpsLimitPosition(preferences.getInt(PREF_GAME_FPS_LIMIT, 0)));
+        sbDisplayFpsLimit.setValue(preferences.getInt(PREF_DISPLAY_FPS_LIMIT, 0));
+        sbGameFpsLimit.setValue(preferences.getInt(PREF_GAME_FPS_LIMIT, 0));
         swShowFPS.setChecked(preferences.getBoolean(PREF_SHOW_FPS, false));
         loading = false;
 
@@ -75,7 +74,7 @@ public class DisplayEnhancementDialog extends ContentDialog {
         findViewById(R.id.LLShowFPS).setOnClickListener((v) -> swShowFPS.setChecked(!swShowFPS.isChecked()));
         btSyncGameFpsLimit.setOnClickListener((v) -> {
             loading = true;
-            sGameFpsLimit.setSelection(sDisplayFpsLimit.getSelectedItemPosition());
+            sbGameFpsLimit.setValue(sbDisplayFpsLimit.getValue());
             loading = false;
             saveAndApply();
         });
@@ -92,8 +91,8 @@ public class DisplayEnhancementDialog extends ContentDialog {
         };
         sPictureStyle.setOnItemSelectedListener(listener);
         sFrameInterpolation.setOnItemSelectedListener(listener);
-        sDisplayFpsLimit.setOnItemSelectedListener(listener);
-        sGameFpsLimit.setOnItemSelectedListener(listener);
+        sbDisplayFpsLimit.setOnValueChangeListener((seekBar, value) -> saveAndApply());
+        sbGameFpsLimit.setOnValueChangeListener((seekBar, value) -> saveAndApply());
         swShowFPS.setOnCheckedChangeListener((buttonView, isChecked) -> saveAndApply());
     }
 
@@ -110,8 +109,8 @@ public class DisplayEnhancementDialog extends ContentDialog {
         int styleMode = sPictureStyle.getSelectedItemPosition();
         int frameSmoothingMode = sFrameInterpolation.getSelectedItemPosition();
         boolean showFPS = swShowFPS.isChecked();
-        int displayFpsLimit = FPS_LIMIT_VALUES[Math.max(0, Math.min(sDisplayFpsLimit.getSelectedItemPosition(), FPS_LIMIT_VALUES.length - 1))];
-        int gameFpsLimit = FPS_LIMIT_VALUES[Math.max(0, Math.min(sGameFpsLimit.getSelectedItemPosition(), FPS_LIMIT_VALUES.length - 1))];
+        int displayFpsLimit = Math.round(sbDisplayFpsLimit.getValue());
+        int gameFpsLimit = Math.round(sbGameFpsLimit.getValue());
 
         preferences.edit()
             .putInt(PREF_STYLE_MODE, styleMode)
@@ -171,10 +170,4 @@ public class DisplayEnhancementDialog extends ContentDialog {
         DXVKConfigDialog.setRuntimeFrameLimit(activity, gameFpsLimit);
     }
 
-    private int findFpsLimitPosition(int fpsLimit) {
-        for (int i = 0; i < FPS_LIMIT_VALUES.length; i++) {
-            if (FPS_LIMIT_VALUES[i] == fpsLimit) return i;
-        }
-        return 0;
-    }
 }

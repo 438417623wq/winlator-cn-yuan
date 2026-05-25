@@ -40,6 +40,7 @@ public class SeekBar extends AppCompatImageView {
     private final float thumbRadius;
     private final RectF rect = new RectF();
     private String suffix;
+    private String zeroLabel;
     private final int colorPrimary = 0xffd7d7d7;
     private final int colorSecondary;
     private LinearGradient glossyEffectGradient;
@@ -65,6 +66,7 @@ public class SeekBar extends AppCompatImageView {
             minValue = ta.getFloat(R.styleable.SeekBar_minValue, minValue);
             maxValue = ta.getFloat(R.styleable.SeekBar_maxValue, maxValue);
             suffix = ta.getString(R.styleable.SeekBar_suffix);
+            zeroLabel = ta.getString(R.styleable.SeekBar_zeroLabel);
             textSize = ta.getDimension(R.styleable.SeekBar_textSize, textSize);
 
             setStep(ta.getFloat(R.styleable.SeekBar_step, step));
@@ -83,6 +85,14 @@ public class SeekBar extends AppCompatImageView {
 
     public synchronized void setSuffix(String suffix) {
         this.suffix = suffix;
+    }
+
+    public String getZeroLabel() {
+        return zeroLabel;
+    }
+
+    public synchronized void setZeroLabel(String zeroLabel) {
+        this.zeroLabel = zeroLabel;
     }
 
     public OnValueChangeListener getOnValueChangeListener() {
@@ -187,9 +197,11 @@ public class SeekBar extends AppCompatImageView {
         paint.setColor(textColor);
         paint.setAntiAlias(true);
 
-        String text = decimalFormat.format(getValue()) + (suffix != null ? suffix : "");
+        float value = getValue();
+        String text = zeroLabel != null && value == 0 ? zeroLabel : decimalFormat.format(value) + (suffix != null ? suffix : "");
         int repeatCount = 4 + (Mathf.fract(step) > 0 || minValue < 0 ? 1 : 0) + (suffix != null ? suffix.length() : 0);
         float textWidth = paint.measureText(StringUtils.repeat('0', repeatCount));
+        if (zeroLabel != null) textWidth = Math.max(textWidth, paint.measureText(zeroLabel));
         canvas.drawText(text, width - paint.measureText(text), centerY + textSize / 3, paint);
         padding = textWidth + thumbSize;
         float screenCoord = getScreenCoord();
